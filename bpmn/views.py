@@ -4,6 +4,7 @@ from django.shortcuts import render, redirect
 from .models import LogFile
 from .forms import LogForm
 import pandas as pd
+import pm4py
 
 from alpha_miner.alpha_plus import AlphaPlus
 from alpha_miner.graph import MyGraph
@@ -31,7 +32,8 @@ def load_file_view(request):
             new_log_file.save()
             log_file = LogFile.objects.get(id=new_log_file.id)
 
-            logs_df = pd.read_csv(log_file.log_file.path)
+            log = pm4py.read_xes(log_file.log_file.path)
+            logs_df = pm4py.convert_to_dataframe(log)
             columns = list(logs_df.columns)
 
             # logs = LogLoader(log_file.log_file.path)

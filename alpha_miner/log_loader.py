@@ -28,8 +28,13 @@ class LogLoader:
         elif self.log_path.endswith('.xes'):
             log = pm4py.read_xes(self.log_path)
             log_df = pm4py.convert_to_dataframe(log)
-            log_df.rename(
-                columns={'time:timestamp': 'Start Timestamp', 'case:variant-index': 'Case ID'}, 
+            # log_df.rename(
+            #     columns={'time:timestamp': 'Start Timestamp', 'case:variant-index': 'Case ID'}, 
+            #     inplace=True)
+            log_df.rename(columns=
+                {self.activity_column_name: 'Activity',
+                self.case_id_column_name: 'Case ID',
+                self.timestamp_column_name: 'Start Timestamp'},
                 inplace=True)
             return log_df[['Case ID', 'Activity', 'Start Timestamp']]
 
