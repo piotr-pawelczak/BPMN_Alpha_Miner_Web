@@ -1,0 +1,12 @@
+{% extends "bpmn/base.html" %}
+
+{% block title %}BPMN diagram{% endblock %}
+
+{% block content %}
+
+    <h1>BPMN diagram</h1>
+
+    <a class="btn btn-success" href="{% url "bpmn:upload-file" %}">Upload another log file</a>
+
+
+{% endblock %}

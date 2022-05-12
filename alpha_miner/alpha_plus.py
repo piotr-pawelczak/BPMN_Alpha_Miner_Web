@@ -2,8 +2,9 @@ from copy import deepcopy
 from typing import Dict, Set
 from collections import defaultdict
 from itertools import combinations, chain
-from graph import MyGraph
+from .graph import MyGraph
 import re
+
 
 class AlphaPlus:
 
@@ -243,11 +244,10 @@ class AlphaPlus:
                     for output in output_events:
                         graph.remove_edge(event, output)
                     graph.add_and_split_gateway(event, output_events)
-    
 
     def get_self_loop_events(self):
         self_loop_events = set()
-        for event_1 , event_2 in self.parallel_events:
+        for event_1, event_2 in self.parallel_events:
             if event_1 == event_2:
                 self_loop_events.add(event_1)
         
@@ -258,9 +258,10 @@ class AlphaPlus:
 
     def add_self_loop(self, graph: MyGraph):
         for event in self.self_loop_events:
-            successor = graph.successors(event)[0]
-            graph.remove_edge(event, successor)
-            graph.add_xor_split_gateway(event, [successor, event])
+            if event in graph.nodes():
+                successor = graph.successors(event)[0]
+                graph.remove_edge(event, successor)
+                graph.add_xor_split_gateway(event, [successor, event])
 
 
     # DRAWING A GRAPH
