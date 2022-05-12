@@ -1,16 +1,16 @@
 import os
 
-from django.shortcuts import render
+from django.shortcuts import render, redirect
+from .models import LogFile
+from .forms import LogForm
+
 from alpha_miner.alpha_plus import AlphaPlus
 from alpha_miner.graph import MyGraph
 from alpha_miner.log_loader import LogLoader
 from alpha_miner.filter import Filter
-from .models import FilesUpload
-
-from django.conf import settings
-
 
 # Create your views here.
+
 
 def home_view(request):
 
@@ -20,7 +20,23 @@ def home_view(request):
 
 def load_file_view(request):
 
-    context = {}
+    form = LogForm()
+
+    if request.method == 'POST' and 'load_file' in request.POST:
+        form = LogForm(request.POST, request.FILES)
+        if form.is_valid():
+            new_log_file = LogFile(log_file=request.FILES["log_file"])
+            new_log_file.save()
+            log_file = LogFile.objects.get(id=new_log_file.id)
+
+            logs = LogLoader(log_file.log_file.path)
+            logs_df = logs.read_logs()
+            columns = list(logs_df.columns)
+
+            context = {"log_upload_form": form, "log_file": log_file, "columns": columns}
+            return render(request, "bpmn/file_load.html", context)
+
+    context = {"log_upload_form": form}
     return render(request, "bpmn/file_load.html", context)
 
 

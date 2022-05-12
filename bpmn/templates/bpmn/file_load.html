@@ -1,4 +1,6 @@
 {% extends "bpmn/base.html" %}
+{% load crispy_forms_filters %}
+{% load crispy_forms_tags %}
 
 {% block title %}Load file{% endblock %}
 
@@ -7,9 +9,46 @@
     <h1>Load logs from file</h1>
 
     <p>TODO: instruction to user</p>
-    <a class="btn btn-warning" href="#">Choose file</a>
 
-    <a class="btn btn-success" href="{% url "bpmn:diagram" %}">Generate BPMN</a>
+    <form action="{% url "bpmn:upload-file" %}" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <ul class="list-group" style="width: 300px;">
+            <li class="list-group-item pt-1 pb-1">
+                <div class="log_upload_container">
+                    {{ log_upload_form }}
+                    <label for="file-upload-input" class="custom-file-upload btn btn-warning" id="file-choose">
+                        Choose file
+                    </label>
+                </div>
+            </li>
+            <li class="list-group-item pt-1 pb-1" style="height: 35px;">
+                {% if log_file %}
+                    <p id="selected_file">Selected file: {{ log_file.log_file.name }}</p>
+                {% else %}
+                    <p id="selected_file">No selected file</p>
+                {% endif %}
+            </li>
+            <li class="list-group-item pt-1 pb-1">
+                <input type="submit" value="Upload selected file" class="btn btn-success" name="load_file">
+            </li>
+        </ul>
+    </form>
+
+    {% if log_file %}
+        <p>{{ columns }}</p>
+    {% endif %}
 
 
+    <a class="btn btn-success mt-3" href="{% url "bpmn:diagram" %}">Generate BPMN</a>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+          $("#file-upload-input").change(function(){
+            let file_path = $(this).val();
+            let file_name = file_path.split('\\')[2];
+            $('#selected_file').text("Selected file: " + file_name);
+          });
+        });
+    </script>
 {% endblock content %}
