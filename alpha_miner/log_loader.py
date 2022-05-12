@@ -23,7 +23,7 @@ class LogLoader:
                            self.case_id_column_name: 'Case ID',
                            self.timestamp_column_name: 'Start Timestamp'},
                           inplace=True)
-            return log_df
+            return log_df[['Case ID', 'Activity', 'Start Timestamp']]
 
         elif self.log_path.endswith('.xes'):
             log = pm4py.read_xes(self.log_path)

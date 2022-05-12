@@ -3,6 +3,7 @@ import os
 from django.shortcuts import render, redirect
 from .models import LogFile
 from .forms import LogForm
+import pandas as pd
 
 from alpha_miner.alpha_plus import AlphaPlus
 from alpha_miner.graph import MyGraph
@@ -25,16 +26,37 @@ def load_file_view(request):
     if request.method == 'POST' and 'load_file' in request.POST:
         form = LogForm(request.POST, request.FILES)
         if form.is_valid():
+            LogFile.objects.all().delete()
             new_log_file = LogFile(log_file=request.FILES["log_file"])
             new_log_file.save()
             log_file = LogFile.objects.get(id=new_log_file.id)
 
-            logs = LogLoader(log_file.log_file.path)
-            logs_df = logs.read_logs()
+            logs_df = pd.read_csv(log_file.log_file.path)
             columns = list(logs_df.columns)
 
-            context = {"log_upload_form": form, "log_file": log_file, "columns": columns}
+            # logs = LogLoader(log_file.log_file.path)
+            # logs_df = logs.read_logs()
+            # columns = list(logs_df.columns)
+
+            context = {"log_upload_form": form, "log_file": log_file, "columns": columns, "select_columns": True}
             return render(request, "bpmn/file_load.html", context)
+
+    if request.method == 'POST' and 'load_columns' in request.POST:
+        form = LogForm(request.POST, request.FILES)
+
+        case_id_column_name = request.POST["case_id"]
+        activity_column_name = request.POST["activity"]
+        start_timestamp_column_name = request.POST["start_timestamp"]
+
+        log_file = LogFile.objects.first()
+
+        logs = LogLoader(log_file.log_file.path, case_id_column_name, activity_column_name, start_timestamp_column_name)
+        logs_df = logs.read_logs()
+        columns = list(logs_df.columns)
+        variants = logs.get_variants()
+        
+        context = {"log_upload_form": form, "log_file": log_file, "columns": columns, "variants": variants}
+        return render(request, "bpmn/file_load.html", context)
 
     context = {"log_upload_form": form}
     return render(request, "bpmn/file_load.html", context)
