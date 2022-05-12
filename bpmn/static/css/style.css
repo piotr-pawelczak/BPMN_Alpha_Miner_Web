@@ -1,0 +1,3 @@
+.log_upload_container input[type="file"]{
+    display: none;
+}
