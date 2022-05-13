@@ -14,41 +14,35 @@ class LogLoader:
         self.activity_column_name = activity_column_name
         self.case_id_column_name = case_id_column_name
         self.timestamp_column_name = timestamp_column_name
+        self.log_df = self.read_logs()
 
     def read_logs(self):
         if self.log_path.endswith('.csv'):
             log_df = pd.read_csv(self.log_path)
-            log_df.rename(columns=
-                          {self.activity_column_name: 'Activity',
-                           self.case_id_column_name: 'Case ID',
-                           self.timestamp_column_name: 'Start Timestamp'},
-                          inplace=True)
-            return log_df[['Case ID', 'Activity', 'Start Timestamp']]
+            return log_df
 
         elif self.log_path.endswith('.xes'):
             log = pm4py.read_xes(self.log_path)
             log_df = pm4py.convert_to_dataframe(log)
-            # log_df.rename(
-            #     columns={'time:timestamp': 'Start Timestamp', 'case:variant-index': 'Case ID'}, 
-            #     inplace=True)
-            log_df.rename(columns=
-                {self.activity_column_name: 'Activity',
-                self.case_id_column_name: 'Case ID',
-                self.timestamp_column_name: 'Start Timestamp'},
-                inplace=True)
-            return log_df[['Case ID', 'Activity', 'Start Timestamp']]
-
+            return log_df
         else:
             raise UnsupportedFileExtension(
                 f'File {self.log_path} has unsupported extension. Try load .csv or .xes file')
 
     def get_variants(self):
-        log_df = self.read_logs()
-        variants = log_df.sort_values(
+        variants = self.log_df.sort_values(
             by=['Case ID', 'Start Timestamp']).groupby(['Case ID']).agg({'Activity': ";".join})
         variants.drop_duplicates(subset='Activity', keep=False, inplace=True)
         variants['Trace'] = [trace.split(';') for trace in variants['Activity']]
         return variants['Trace'].tolist()
+
+    def pick_columns(self):
+        self.log_df.rename(columns=
+                           {self.activity_column_name: 'Activity',
+                            self.case_id_column_name: 'Case ID',
+                            self.timestamp_column_name: 'Start Timestamp'},
+                           inplace=True)
+        self.log_df = self.log_df[['Case ID', 'Activity', 'Start Timestamp']]
 
 
 class UnsupportedFileExtension(Exception):

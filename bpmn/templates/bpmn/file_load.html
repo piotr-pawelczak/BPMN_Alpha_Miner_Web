@@ -32,16 +32,6 @@
         </ul>
     </form>
 
-    {% if log_file %}
-        <p>{{ columns }}</p>
-    {% endif %}
-
-    {% if variants %}
-        <p>Variants {{ variants }}</p>
-    {% endif %}
-
-    <a class="btn btn-primary" href="{% url "bpmn:diagram" %}">Generate BPMN</a>
-
     <!-- Modal -->
     <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-lg">
@@ -90,7 +80,8 @@
                         </div>
                     </div>
                     <div class="modal-footer">
-                        <button type="submit" class="btn btn-primary mb-3" name="load_columns" value="load">Submit columns</button>
+                        <input type="text" id="log_file_id" name="log_file_id" value="{{ log_file.id }}" style="display: none;">
+                        <button type="submit" class="btn btn-primary mb-3" name="load_columns" value="load">Generate BPMN</button>
                     </div>
                 </form>
             </div>
@@ -107,7 +98,7 @@
           });
         });
         $(document).ready(function(){
-            var select_columns = "{{select_columns}}";
+            let select_columns = "{{select_columns}}";
             if (select_columns !== "") {
                 $('#exampleModal').modal('show');
             }

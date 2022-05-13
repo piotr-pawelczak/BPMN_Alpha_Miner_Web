@@ -1,12 +1,17 @@
 {% extends "bpmn/base.html" %}
+{% load static %}
 
 {% block title %}BPMN diagram{% endblock %}
 
 {% block content %}
 
     <h1>BPMN diagram</h1>
+    <p>TODO: Parameters</p>
+
+    <div class="container mt-3">
+        <img class="img-fluid" src="{% static 'svg\simple_process_model.svg' %}" alt="BPMN process model">
+    </div>
 
     <a class="btn btn-success" href="{% url "bpmn:upload-file" %}">Upload another log file</a>
-
 
 {% endblock %}
