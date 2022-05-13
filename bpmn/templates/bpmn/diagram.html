@@ -8,10 +8,85 @@
     <h1>BPMN diagram</h1>
     <p>TODO: Parameters</p>
 
+    <p>Filter parameters:</p>
+
+    <div class="range-wrap row" style="width: 500px;">
+        <label class="col-4" for="node_threshold">Node threshold</label>
+        <div class="col-4">
+            <input id="node_threshold" type="range" min="0" max="100" value="0" step="1">
+        </div>
+        <div class="range-value col-4" id="range_node"></div>
+    </div>
+
+    <div class="range-wrap row" style="width: 500px;">
+        <label class="col-4" for="edge_threshold">Edge threshold</label>
+        <div class="col-4">
+            <input id="edge_threshold" type="range" min="0" max="100" value="0" step="1">
+        </div>
+        <div class="range-value col-4" id="range_edge"></div>
+    </div>
+
+    <div>
+        <form method="post">
+            {% csrf_token %}
+            <input type="number" id="node_threshold_input" name="node_threshold" style="display: none;" value="0">
+            <input type="number" id="edge_threshold_input" name="edge_threshold" style="display: none;" value="0">
+            <input type="submit" class="btn btn-success" value="Apply filters" name="apply_filters">
+        </form>
+    </div>
+
     <div class="container mt-3">
         <img class="img-fluid" src="{% static 'svg\simple_process_model.svg' %}" alt="BPMN process model">
     </div>
 
     <a class="btn btn-success" href="{% url "bpmn:upload-file" %}">Upload another log file</a>
+
+    <script>
+        const
+            edge_threshold = document.getElementById('edge_threshold'),
+            node_threshold = document.getElementById('node_threshold'),
+            range_edge = document.getElementById('range_edge'),
+            range_node = document.getElementById('range_node');
+
+        // Node
+        setValueNode = () => {
+            const
+                newValue = Number((node_threshold.value - node_threshold.min) * 100 / (node_threshold.max - node_threshold.min)),
+                newPosition = 10 - (newValue * 0.2);
+            range_node.innerHTML = `<span>${node_threshold.value}</span>`;
+            range_node.style.left = `calc(${newValue}% + (${newPosition}px))`;
+        };
+
+        setValueEdge = () => {
+            const
+                newValue = Number((edge_threshold.value - edge_threshold.min) * 100 / (edge_threshold.max - edge_threshold.min)),
+                newPosition = 10 - (newValue * 0.2);
+            range_edge.innerHTML = `<span>${edge_threshold.value}</span>`;
+            range_edge.style.left = `calc(${newValue}% + (${newPosition}px))`;
+        };
+
+        document.addEventListener("DOMContentLoaded", setValueNode);
+        node_threshold.addEventListener('input', setValueNode);
+        document.addEventListener("DOMContentLoaded", setValueEdge);
+        edge_threshold.addEventListener('input', setValueEdge);
+    </script>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script>
+        $(document).ready(function(){
+          $("#node_threshold").change(function(){
+            let node_threshold = $(this).val();
+            const node_input = $('#node_threshold_input');
+            node_input.val(node_threshold);
+          });
+
+          $("#edge_threshold").change(function(){
+            let edge_threshold = $(this).val();
+            const edge_input = $('#edge_threshold_input');
+            edge_input.val(edge_threshold);
+          });
+        });
+
+    </script>
 
 {% endblock %}

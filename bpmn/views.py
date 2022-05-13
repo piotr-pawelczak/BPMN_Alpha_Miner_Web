@@ -3,8 +3,7 @@ import os
 from django.shortcuts import render, redirect
 from .models import LogFile
 from .forms import LogForm
-import pandas as pd
-import pm4py
+from django.contrib.staticfiles import finders
 
 from alpha_miner.alpha_plus import AlphaPlus
 from alpha_miner.graph import MyGraph
@@ -42,18 +41,15 @@ def load_file_view(request):
 
         log_file_id = request.POST.get('log_file_id')
 
-        case_id_column_name = request.POST["case_id"]
-        activity_column_name = request.POST["activity"]
-        start_timestamp_column_name = request.POST["start_timestamp"]
+        case_id_column_name = request.POST.get("case_id")
+        activity_column_name = request.POST.get("activity")
+        start_timestamp_column_name = request.POST.get("start_timestamp")
 
         log_file = LogFile.objects.get(id=log_file_id)
         log_file.case_id_column_name = case_id_column_name
         log_file.activity_column_name = activity_column_name
         log_file.timestamp_column_name = start_timestamp_column_name
         log_file.save()
-
-        # logs = LogLoader(log_file.log_file.path, case_id_column_name, activity_column_name, start_timestamp_column_name)
-        # logs.pick_columns()
 
         return redirect("bpmn:diagram", log_file_id)
 
@@ -62,6 +58,13 @@ def load_file_view(request):
 
 
 def diagram_view(request, pk):
+
+    NODE_THRESHOLD = 0
+    EDGE_THRESHOLD = 0
+
+    if request.method == 'POST' and 'apply_filters' in request.POST:
+        NODE_THRESHOLD = int(request.POST.get('node_threshold'))
+        EDGE_THRESHOLD = int(request.POST.get('edge_threshold'))
 
     log_file = LogFile.objects.get(id=pk)
     logs = LogLoader(log_file.log_file.path,
@@ -73,9 +76,6 @@ def diagram_view(request, pk):
     logs_df = logs.log_df
     variants = logs.get_variants()
 
-    NODE_THRESHOLD = 0
-    EDGE_THRESHOLD = 0
-
     nodes_to_delete, edges_to_delete = Filter(logs_df).filter_graph(NODE_THRESHOLD, EDGE_THRESHOLD)
 
     G = MyGraph()
@@ -84,8 +84,9 @@ def diagram_view(request, pk):
     miner.draw(G)
 
     cwd = os.getcwd()
+    svg_path = finders.find('svg/')
     try:
-        os.chdir('C:\\Users\\piotr\\Desktop\\ISZ\\Semestr 1\\MiAPB\\bpmn_web\\bpmn\\static\\svg')
+        os.chdir(svg_path)
         G.draw('simple_process_model.svg', prog='dot')
     finally:
         os.chdir(cwd)
