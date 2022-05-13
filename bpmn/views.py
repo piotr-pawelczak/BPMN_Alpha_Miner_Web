@@ -10,6 +10,9 @@ from alpha_miner.graph import MyGraph
 from alpha_miner.log_loader import LogLoader
 from alpha_miner.filter import Filter
 
+from django.core import management
+
+
 # Create your views here.
 
 
@@ -57,26 +60,9 @@ def load_file_view(request):
     return render(request, "bpmn/file_load.html", context)
 
 
-def diagram_view(request, pk):
+def display_graph(logs_df, variants, node_threshold, edge_threshold):
 
-    NODE_THRESHOLD = 0
-    EDGE_THRESHOLD = 0
-
-    if request.method == 'POST' and 'apply_filters' in request.POST:
-        NODE_THRESHOLD = int(request.POST.get('node_threshold'))
-        EDGE_THRESHOLD = int(request.POST.get('edge_threshold'))
-
-    log_file = LogFile.objects.get(id=pk)
-    logs = LogLoader(log_file.log_file.path,
-                     activity_column_name=log_file.activity_column_name,
-                     case_id_column_name=log_file.case_id_column_name,
-                     timestamp_column_name=log_file.timestamp_column_name)
-
-    logs.pick_columns()
-    logs_df = logs.log_df
-    variants = logs.get_variants()
-
-    nodes_to_delete, edges_to_delete = Filter(logs_df).filter_graph(NODE_THRESHOLD, EDGE_THRESHOLD)
+    nodes_to_delete, edges_to_delete = Filter(logs_df).filter_graph(node_threshold, edge_threshold)
 
     G = MyGraph()
     miner = AlphaPlus(variants)
@@ -91,6 +77,28 @@ def diagram_view(request, pk):
     finally:
         os.chdir(cwd)
 
-    context = {"log_file_id": pk}
+
+def diagram_view(request, pk):
+
+    NODE_THRESHOLD = 0
+    EDGE_THRESHOLD = 0
+
+    log_file = LogFile.objects.get(id=pk)
+    logs = LogLoader(log_file.log_file.path,
+                     activity_column_name=log_file.activity_column_name,
+                     case_id_column_name=log_file.case_id_column_name,
+                     timestamp_column_name=log_file.timestamp_column_name)
+
+    logs.pick_columns()
+    logs_df = logs.log_df
+    variants = logs.get_variants()
+
+    if 'node_threshold_input' in request.POST:
+        NODE_THRESHOLD = int(request.POST.get('node_threshold_input'))
+        EDGE_THRESHOLD = int(request.POST.get('edge_threshold_input'))
+
+    display_graph(logs_df, variants, NODE_THRESHOLD, EDGE_THRESHOLD)
+    context = {"log_file_id": pk, "node_threshold": NODE_THRESHOLD, "edge_threshold": EDGE_THRESHOLD}
+
     return render(request, "bpmn/diagram.html", context)
 
