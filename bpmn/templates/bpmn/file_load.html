@@ -48,9 +48,11 @@
                                 <label for="case_id" class="col-sm-2 col-form-label">Case&nbsp;ID</label>
                                 <div class="col-sm-10">
                                     <select class="form-select" aria-label="Default select example" id="case_id" name="case_id">
-                                        <option disabled selected value> -- select an option -- </option>
+                                        <option selected>{{ case_id_suggestion }}</option>
                                         {% for column_name in columns %}
-                                        <option>{{ column_name }}</option>
+                                            {% if column_name != case_id_suggestion %}
+                                                <option>{{ column_name }}</option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -59,9 +61,11 @@
                                 <label for="activity" class="col-sm-2 col-form-label">Activity</label>
                                 <div class="col-sm-10">
                                     <select class="form-select" aria-label="Default select example" id="activity" name="activity">
-                                        <option disabled selected value> -- select an option -- </option>
+                                        <option selected>{{ activity_suggestion }}</option>
                                         {% for column_name in columns %}
-                                        <option>{{ column_name }}</option>
+                                            {% if column_name != activity_suggestion %}
+                                                <option>{{ column_name }}</option>
+                                            {% endif %}
                                         {% endfor %}
                                     </select>
                                 </div>
@@ -70,9 +74,11 @@
                                     <label for="start_timestamp" class="col-sm-2 col-form-label">Start&nbsp;Timestamp</label>
                                     <div class="col-sm-10">
                                         <select class="form-select" aria-label="Default select example" id="start_timestamp" name="start_timestamp">
-                                            <option disabled selected value> -- select an option -- </option>
+                                            <option selected> {{ timestamp_suggestion }} </option>
                                             {% for column_name in columns %}
-                                            <option>{{ column_name }}</option>
+                                                {% if column_name != timestamp_suggestion %}
+                                                    <option>{{ column_name }}</option>
+                                                {% endif %}
                                             {% endfor %}
                                         </select>
                                     </div>

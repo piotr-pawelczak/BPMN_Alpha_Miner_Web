@@ -9,6 +9,7 @@ from alpha_miner.alpha_plus import AlphaPlus
 from alpha_miner.graph import MyGraph
 from alpha_miner.log_loader import LogLoader
 from alpha_miner.filter import Filter
+from alpha_miner.column_match import get_activity_columns, get_case_id_columns, get_date_columns
 
 from django.core import management
 
@@ -36,13 +37,20 @@ def load_file_view(request):
             log_file = LogFile.objects.get(id=log_file_id)
             logs_df = LogLoader(log_file.log_file.path).log_df
             columns = list(logs_df.columns)
+            
+            case_id_suggestion = get_case_id_columns(logs_df)[0]
+            activity_suggestion = get_activity_columns(logs_df)[0]
+            timestamp_suggestion = get_date_columns(logs_df)[0]
 
-            context = {"log_upload_form": form, "log_file": log_file, "columns": columns, "select_columns": True}
+            context = {"log_upload_form": form, "log_file": log_file, "columns": columns, "select_columns": True,
+             "case_id_suggestion": case_id_suggestion, "activity_suggestion": activity_suggestion, "timestamp_suggestion": timestamp_suggestion}
             return render(request, "bpmn/file_load.html", context)
 
     if request.method == 'POST' and 'load_columns' in request.POST:
 
         log_file_id = request.POST.get('log_file_id')
+
+        print(request.POST)
 
         case_id_column_name = request.POST.get("case_id")
         activity_column_name = request.POST.get("activity")
@@ -84,13 +92,16 @@ def diagram_view(request, pk):
     EDGE_THRESHOLD = 0
 
     log_file = LogFile.objects.get(id=pk)
+
     logs = LogLoader(log_file.log_file.path,
                      activity_column_name=log_file.activity_column_name,
                      case_id_column_name=log_file.case_id_column_name,
                      timestamp_column_name=log_file.timestamp_column_name)
 
     logs.pick_columns()
+
     logs_df = logs.log_df
+
     variants = logs.get_variants()
 
     if 'node_threshold_input' in request.POST:

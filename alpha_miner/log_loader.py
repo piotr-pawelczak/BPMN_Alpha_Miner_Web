@@ -37,6 +37,10 @@ class LogLoader:
         return variants['Trace'].tolist()
 
     def pick_columns(self):
+
+        if 'Activity' in self.log_df.columns:
+            self.log_df.rename(columns={'Activity': 'not_selected_activity'}, inplace=True)
+
         self.log_df.rename(columns=
                            {self.activity_column_name: 'Activity',
                             self.case_id_column_name: 'Case ID',
