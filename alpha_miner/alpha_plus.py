@@ -138,23 +138,18 @@ class AlphaPlus:
                 event_combinations = list(combinations(self.causality[source], inx))
                 for combination in event_combinations:
                     if len(combination) == 1:
-                        all_combinations.append((set(source), set(combination)))
+                        all_combinations.append((set((source,)), set(combination)))
                     elif self.all_pairs_independent(combination):
-                            all_combinations.append((set(source), set(combination)))
+                            all_combinations.append((set((source,)), set(combination)))
 
         for target in self.inv_causality:
             for inx in range(2, len(self.inv_causality[target]) + 1):
                 event_combinations = list(combinations(self.inv_causality[target], inx))
                 for combination in event_combinations:
                     if self.all_pairs_independent(combination):
-                            all_combinations.append((set(combination), set(target)))
+                            all_combinations.append((set(combination), set((target,))))
         
         return all_combinations
-
-
-    def find_largest_combination(self, combinations_list):
-        for combination in combinations_list:
-            print(combination)
 
 
     def get_Yl(self):

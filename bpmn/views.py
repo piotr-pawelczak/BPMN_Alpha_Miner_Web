@@ -11,9 +11,6 @@ from alpha_miner.log_loader import LogLoader
 from alpha_miner.filter import Filter
 from alpha_miner.column_match import get_activity_columns, get_case_id_columns, get_date_columns
 
-from django.core import management
-
-
 # Create your views here.
 
 
@@ -50,8 +47,6 @@ def load_file_view(request):
 
         log_file_id = request.POST.get('log_file_id')
 
-        print(request.POST)
-
         case_id_column_name = request.POST.get("case_id")
         activity_column_name = request.POST.get("activity")
         start_timestamp_column_name = request.POST.get("start_timestamp")
@@ -77,6 +72,16 @@ def display_graph(logs_df, variants, node_threshold, edge_threshold):
     miner.apply_filter(nodes_to_delete, edges_to_delete)
     miner.draw(G)
 
+    print("========== DEBUG INFO =============")
+    print(f"events: {miner.events}")
+    print(f"Direct: {miner.direct_succession}")
+    print(f"Causality: {miner.causality}")
+    print(f"Xl: {miner.Yl}")
+    print(f"Yl: {miner.Yl}")
+    print(f"self: {miner.self_loop_events}")
+    print(f"parallel: {miner.parallel_events}")
+    print(miner.triangles)
+
     cwd = os.getcwd()
     svg_path = finders.find('svg/')
     try:
@@ -84,6 +89,8 @@ def display_graph(logs_df, variants, node_threshold, edge_threshold):
         G.draw('simple_process_model.svg', prog='dot')
     finally:
         os.chdir(cwd)
+
+    return nodes_to_delete, edges_to_delete
 
 
 def diagram_view(request, pk):
@@ -103,13 +110,23 @@ def diagram_view(request, pk):
     logs_df = logs.log_df
 
     variants = logs.get_variants()
+    traces = Filter(logs_df).traces
+
+    traces_list = list(traces['trace'])
+    traces_count = list(traces['count'])
+    traces_length = [len(elem) for elem in traces_list]
+    traces_info = zip(traces_list, traces_length, traces_count)
+
+    events = logs.get_event_count()
 
     if 'node_threshold_input' in request.POST:
         NODE_THRESHOLD = int(request.POST.get('node_threshold_input'))
         EDGE_THRESHOLD = int(request.POST.get('edge_threshold_input'))
 
-    display_graph(logs_df, variants, NODE_THRESHOLD, EDGE_THRESHOLD)
-    context = {"log_file_id": pk, "node_threshold": NODE_THRESHOLD, "edge_threshold": EDGE_THRESHOLD}
+    nodes_to_delete, edges_to_delete = display_graph(logs_df, variants, NODE_THRESHOLD, EDGE_THRESHOLD)
+    context = {"log_file_id": pk, "node_threshold": NODE_THRESHOLD, "edge_threshold": EDGE_THRESHOLD,
+               "event_counter": events, "variants": variants, "traces_info": traces_info,
+               "edges_to_delete": edges_to_delete, "nodes_to_delete": nodes_to_delete}
 
     return render(request, "bpmn/diagram.html", context)
 

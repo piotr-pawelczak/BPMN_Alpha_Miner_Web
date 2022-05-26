@@ -3,9 +3,14 @@
 {% block title %}BPMN Alpha Miner{% endblock %}
 
 {% block content %}
-    <h1>Home Page</h1>
+    <div class="mt-4 p-5 bg-primary text-white rounded">
+        <h1>BPMN Alpha Miner</h1>
+    </div>
 
-    <p>TODO: short description of miner</p>
+    <div class="mt-4 p-5 bg-secondary text-white rounded">
+        <h1>Web application to create BPMN diagram</h1>
+        <p>Click button below to start uploading file</p>
+    </div>
 
-    <a class="btn btn-success" href="{% url "bpmn:upload-file" %}">Upload log file</a>
+    <a class="btn btn-success mt-3" href="{% url "bpmn:upload-file" %}">Upload log file</a>
 {% endblock content %}

@@ -6,38 +6,107 @@
 {% block content %}
 
     <h1>BPMN diagram</h1>
-    <p>TODO: Parameters</p>
 
-    <ul class="list-group" style="width: 450px;">
-        <li class="list-group-item">
-            <p>Filter parameters</p>
-        </li>
-        <li class="list-group-item">
-            <div class="range-wrap row">
-                <label class="col-4" for="node-slider">Node threshold</label>
-                <div class="col-4">
-                    <input type="range" value="{{ node_threshold }}" min="0" max="100" oninput="$('#node-value').val(this.value)"
-                           id="node-slider" class="filter-slider">
-                </div>
-                <div class="col-4">
-                    <output id="node-value" class="badge bg-primary rounded-pill">{{ node_threshold }}</output>
-                </div>
-            </div>
-        </li>
+    <div class="row mt-5">
+        <!-- Filtering -->
+        <div class="col">
+            <ul class="list-group" style="width: 450px;">
+                <li class="list-group-item">
+                    <p>Filter parameters</p>
+                </li>
+                <li class="list-group-item">
+                    <div class="range-wrap row">
+                        <label class="col-4" for="node-slider">Node threshold</label>
+                        <div class="col-4">
+                            <input type="range" value="{{ node_threshold }}" min="0" max="100"
+                                   oninput="$('#node-value').val(this.value)"
+                                   id="node-slider" class="filter-slider">
+                        </div>
+                        <div class="col">
+                            <output id="node-value" class="badge bg-primary rounded-pill">{{ node_threshold }}</output>
+                        </div>
+                    </div>
+                </li>
 
-        <li class="list-group-item">
-            <div class="range-wrap row">
-                <label class="col-4" for="edge-slider">Edge threshold</label>
-                <div class="col-4">
-                    <input type="range" value="{{ edge_threshold }}" min="0" max="100" oninput="$('#edge-value').val(this.value)"
-                           id="edge-slider" class="filter-slider">
-                </div>
-                <div class="col-4">
-                    <output id="edge-value" class="badge bg-primary rounded-pill">{{ edge_threshold }}</output>
-                </div>
-            </div>
-        </li>
-    </ul>
+                <li class="list-group-item">
+                    <div class="range-wrap row">
+                        <label class="col-4" for="edge-slider">Edge threshold</label>
+                        <div class="col-4">
+                            <input type="range" value="{{ edge_threshold }}" min="0" max="100"
+                                   oninput="$('#edge-value').val(this.value)"
+                                   id="edge-slider" class="filter-slider">
+                        </div>
+                        <div class="col-4">
+                            <output id="edge-value" class="badge bg-primary rounded-pill">{{ edge_threshold }}</output>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Show events -->
+        <div class="col-4">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Event name</th>
+                    <th>Counter</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for event, val in event_counter.items %}
+                    <tr>
+                        <td>{{ event }}</td>
+                        <td>{{ val }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Show events -->
+        <div class="col-4">
+            <table class="table">
+                <thead>
+                <tr>
+                    <th>Trace</th>
+                    <th>Length</th>
+                    <th>Counter</th>
+                </tr>
+                </thead>
+                <tbody>
+                {% for trace, count, length in traces_info %}
+                    <tr>
+                        <td>{{ trace }}</td>
+                        <td>{{ count }}</td>
+                        <td>{{ length }}</td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div> <!-- End of row -->
+
+    <div class="row">
+        <div class="card mt-3 col">
+            <div class="card-header">Filtered nodes</div>
+            {% if nodes_to_delete %}
+                <div class="card-body">{{ nodes_to_delete }}</div>
+            {% else %}
+                <div class="card-body">No nodes to filter</div>
+            {% endif %}
+        </div>
+
+        <div class="card mt-3 col">
+            <div class="card-header">Filtered edges</div>
+            {% if edges_to_delete %}
+                <div class="card-body">{{ edges_to_delete }}</div>
+            {% else %}
+                <div class="card-body">No edges to filter</div>
+            {% endif %}
+        </div>
+    </div>
+
 
     <form method="post" id="filter-form">
         {% csrf_token %}
@@ -46,12 +115,13 @@
 
     </form>
 
-    <div class="container mt-3">
+    <div class="container mt-5">
+        <h3 class="mt-3">Generated BPMN diagram</h3>
         <img class="img-fluid" src="{% static 'svg\simple_process_model.svg' %}" alt="BPMN process model"
              id="bpmn_diagram">
     </div>
 
-    <a class="btn btn-success" href="{% url "bpmn:upload-file" %}">Upload another log file</a>
+    <a class="btn btn-success mt-5 mb-5" href="{% url "bpmn:upload-file" %}">Upload another log file</a>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="{% static "js/update_filter.js" %}"></script>

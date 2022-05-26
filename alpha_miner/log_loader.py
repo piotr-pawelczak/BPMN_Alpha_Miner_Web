@@ -36,9 +36,13 @@ class LogLoader:
         variants['Trace'] = [trace.split(';') for trace in variants['Activity']]
         return variants['Trace'].tolist()
 
+    def get_event_count(self):
+        ev_counter = self.log_df.Activity.value_counts()
+        return ev_counter
+
     def pick_columns(self):
 
-        if 'Activity' in self.log_df.columns:
+        if self.activity_column_name != 'Activity' and 'Activity' in self.log_df.columns:
             self.log_df.rename(columns={'Activity': 'not_selected_activity'}, inplace=True)
 
         self.log_df.rename(columns=
